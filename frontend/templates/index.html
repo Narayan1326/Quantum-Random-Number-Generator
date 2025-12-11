@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Random Number Generator | Enterprise Edition</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --qrng-primary: #6f42c1;
+            --qrng-secondary: #007bff;
+            --qrng-success: #20c997;
+            --qrng-warning: #fd7e14;
+            --qrng-danger: #dc3545;
+            --qrng-dark: #212529;
+            --qrng-light: #f8f9fa;
+        }
+        
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 50px;
+        }
+        
+        .theme-switch input {
+            display: none;
+        }
+        
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            background-color: white;
+            bottom: 2px;
+            content: "";
+            height: 20px;
+            left: 2px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--qrng-primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--qrng-primary) !important;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: box-shadow 0.3s;
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background-color: var(--qrng-primary);
+            border-color: var(--qrng-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a32a3;
+            border-color: #522b96;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-display {
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: rgba(111, 66, 193, 0.1);
+        }
+        
+        .health-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .health-indicator.online {
+            background-color: rgba(32, 201, 151, 0.15);
+            color: #20c997;
+        }
+        
+        .health-indicator.offline {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        .health-indicator.checking {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .footer {
+            background-color: rgba(0, 0, 0, 0.03);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+        
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon.bg-primary-subtle {
+            background-color: rgba(111, 66, 193, 0.1) !important;
+            color: var(--qrng-primary);
+        }
+        
+        .feature-icon.bg-success-subtle {
+            background-color: rgba(32, 201, 151, 0.1) !important;
+            color: var(--qrng-success);
+        }
+        
+        .feature-icon.bg-info-subtle {
+            background-color: rgba(13, 202, 240, 0.1) !important;
+            color: #0dcaf0;
+        }
+        
+        .feature-icon.bg-warning-subtle {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+            color: #ffc107;
+        }
+        
+        .dark-mode .feature-icon.bg-primary-subtle,
+        .dark-mode .feature-icon.bg-success-subtle,
+        .dark-mode .feature-icon.bg-info-subtle,
+        .dark-mode .feature-icon.bg-warning-subtle {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .toast-container {
+            z-index: 1055;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 12px;
+        }
+        
+        .dark-mode .loading-overlay {
+            background-color: rgba(33, 37, 41, 0.7);
+        }
+        
+        .dark-mode .result-display {
+            background-color: #212529 !important;
+            color: #f8f9fa !important;
+        }
+        
+        .dark-mode .stat-card {
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .stat-card .text-muted {
+            color: #adb5bd !important;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(111, 66, 193, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .dark-mode .hero-section {
+            background: linear-gradient(135deg, rgba(111, 66, 193, 0.2) 0%, rgba(32, 201, 151, 0.2) 100%);
+        }
+        
+        .dark-mode .chart-container {
+            background-color: #212529;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .navbar-dark .navbar-brand,
+        .navbar-dark .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+        
+        .navbar-dark .nav-link:hover,
+        .navbar-dark .nav-link.active {
+            color: #fff !important;
+        }
+        
+        .navbar-dark .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        .navbar-dark .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark-mode .badge.bg-success-subtle {
+            background-color: #198754 !important;
+        }
+        
+        .dark-mode .badge.text-success-emphasis {
+            color: #fff !important;
+        }
+        
+        .quantum-animation {
+            position: relative;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantum-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse 2s infinite;
+        }
+        
+        .dot-1 {
+            background-color: var(--qrng-primary);
+            animation-delay: 0s;
+        }
+        
+        .dot-2 {
+            background-color: var(--qrng-success);
+            animation-delay: 0.5s;
+        }
+        
+        .dot-3 {
+            background-color: var(--qrng-warning);
+            animation-delay: 1s;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg bg-body navbar-light border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shuffle"></i> Quantum RNG
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#helpModal"><i class="bi bi-question-circle"></i> Help</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="bi bi-info-circle"></i> About</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="theme-switch-wrapper me-3">
+                        <label class="theme-switch" for="checkbox">
+                            <input type="checkbox" id="checkbox" />
+                            <div class="slider"></div>
+                        </label>
+                    </div>
+                    <span class="me-2 small">Dark Mode</span>
+                    <span class="badge bg-success-subtle text-success-emphasis ms-2">
+                        <i class="bi bi-server"></i> <span id="health-status-text">Checking...</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold mb-3">Enterprise Quantum Random Number Generator</h1>
+                    <p class="lead mb-4">
+                        Generate cryptographically secure random numbers using quantum mechanics principles. 
+                        Powered by IBM Qiskit and certified for enterprise applications.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-lg" id="quickGenerateBtn">
+                            <i class="bi bi-lightning"></i> Quick Generate
+                        </button>
+                        <button class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#apiDocsModal">
+                            <i class="bi bi-code-slash"></i> API Docs
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="quantum-animation">
+                        <div class="quantum-dot dot-1" style="top: 30%; left: 30%;"></div>
+                        <div class="quantum-dot dot-2" style="top: 50%; left: 70%;"></div>
+                        <div class="quantum-dot dot-3" style="top: 70%; left: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration and Results -->
+        <div class="row g-4 mb-4">
+            <!-- Configuration Panel -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-sliders"></i> Configuration</h5>
+                        <span class="badge bg-primary-subtle text-primary-emphasis">v2.1</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="config-form">
+                            <div class="mb-3">
+                                <label for="bits" class="form-label">Number of Bits</label>
+                                <input type="range" class="form-range" id="bits" name="bits" min="8" max="4096" value="256" step="8">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">8</small>
+                                    <span class="fw-bold" id="bitsValue">256</span>
+                                    <small class="text-muted">4096</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="mode" class="form-label">Generation Mode</label>
+                                <select class="form-select" id="mode" name="mode">
+                                    <option value="simulator">Qiskit Simulator</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i> Qiskit quantum simulator
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="extractor" class="form-label">Extractor Method</label>
+                                <select class="form-select" id="extractor" name="extractor">
+                                    <option value="von_neumann">Von Neumann Extractor</option>
+                                    <option value="hash">SHA-256 Hash Extractor</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i> Post-processing algorithm for bias reduction
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="generate-btn">
+                                    <i class="bi bi-shuffle"></i> Generate Random Numbers
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Panel -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Results</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-1" id="copyBinaryBtn" title="Copy Binary">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-1" id="copyHexBtn" title="Copy Hex">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="downloadBtn" title="Download">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="position-relative">
+                            <div id="loadingOverlay" class="loading-overlay d-none">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Generating quantum randomness...</p>
+                                </div>
+                            </div>
+                            
+                            <div id="results-container">
+                                <div class="text-center py-5">
+                                    <i class="bi bi-shuffle display-1 text-muted"></i>
+                                    <p class="mt-3">Configure parameters and click "Generate" to begin</p>
+                                    <p class="text-muted small">Results will appear here with detailed statistics</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Charts -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Bit Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-speedometer"></i> Quality Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="metricsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card bg-primary-subtle border-0">
+                    <div class="stat-icon bg-primary-subtle">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3 class="mb-1" id="randomnessScore">-</h3>
+                    <p class="mb-0 text-muted">Randomness Score</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card bg-success-subtle border-0">
+                    <div class="stat-icon bg-success-subtle">
+                        <i class="bi bi-hash"></i>
+                    </div>
+                    <h3 class="mb-1" id="entropyEstimate">-</h3>
+                    <p class="mb-0 text-muted">Entropy Estimate</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card bg-info-subtle border-0">
+                    <div class="stat-icon bg-info-subtle">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h3 class="mb-1" id="biasValue">-</h3>
+                    <p class="mb-0 text-muted">Bias Value</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card bg-warning-subtle border-0">
+                    <div class="stat-icon bg-warning-subtle">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <h3 class="mb-1" id="bitCount">-</h3>
+                    <p class="mb-0 text-muted">Bit Count</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="text-center p-3">
+                    <div class="feature-icon bg-primary-subtle mx-auto">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h5>Quantum Powered</h5>
+                    <p class="text-muted small">Uses quantum superposition for true randomness</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3">
+                    <div class="feature-icon bg-success-subtle mx-auto">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5>Cryptographically Secure</h5>
+                    <p class="text-muted small">Meets NIST randomness standards</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3">
+                    <div class="feature-icon bg-info-subtle mx-auto">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h5>High Performance</h5>
+                    <p class="text-muted small">Generates thousands of bits per second</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3">
+                    <div class="feature-icon bg-warning-subtle mx-auto">
+                        <i class="bi bi-cloud-arrow-down"></i>
+                    </div>
+                    <h5>API Access</h5>
+                    <p class="text-muted small">RESTful API for integration</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="mb-3 mb-md-0">
+                    <small class="text-muted">
+                        &copy; 2025 Quantum RNG Enterprise | 
+                        <span class="badge bg-success-subtle text-success-emphasis">
+                            <i class="bi bi-server"></i> Backend: <span id="footer-health">Checking...</span>
+                        </span>
+                    </small>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> Last updated: <span id="lastUpdated">-</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+                Message here
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-question-circle"></i> Help & Documentation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Getting Started</h6>
+                    <p>To generate quantum random numbers:</p>
+                    <ol>
+                        <li>Adjust the number of bits using the slider (8-4096)</li>
+                        <li>Select your preferred generation mode (Simulator only)</li>
+                        <li>Choose an extractor method (Von Neumann or SHA-256 Hash)</li>
+                        <li>Click "Generate Random Numbers"</li>
+                    </ol>
+                    
+                    <h6>Understanding the Results</h6>
+                    <ul>
+                        <li><strong>Binary Output</strong>: The raw binary representation of the random numbers</li>
+                        <li><strong>HEX Output</strong>: Compact hexadecimal representation for easier use</li>
+                        <li><strong>Randomness Score</strong>: Percentage indicating quality (100% = perfect randomness)</li>
+                        <li><strong>Entropy Estimate</strong>: Measure of unpredictability (higher is better)</li>
+                        <li><strong>Bias Value</strong>: Deviation from perfect 50/50 distribution (lower is better)</li>
+                    </ul>
+                    
+                    <h6>Technical Details</h6>
+                    <p>This system uses quantum superposition principles to generate truly random numbers. 
+                    Qubits are placed in superposition states and measured to produce random outcomes.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> About Quantum RNG</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Enterprise Quantum Random Number Generator v2.1</strong></p>
+                    <p>A cutting-edge solution for generating cryptographically secure random numbers using quantum computing principles.</p>
+                    <p>Built with:</p>
+                    <ul>
+                        <li>IBM Qiskit for quantum computation</li>
+                        <li>Django REST Framework for backend API</li>
+                        <li>Flask for frontend web interface</li>
+                        <li>Bootstrap 5 for responsive design</li>
+                    </ul>
+                    <p class="mb-0">Designed for enterprise applications requiring the highest quality random numbers for cryptographic keys, simulations, and security protocols.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Documentation Modal -->
+    <div class="modal fade" id="apiDocsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-code-slash"></i> API Documentation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Endpoint: <code>GET /api/generate</code></h6>
+                    <p>Generate quantum random numbers with configurable parameters.</p>
+                    
+                    <h6>Parameters:</h6>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>bits</code></td>
+                                <td>Integer</td>
+                                <td>256</td>
+                                <td>Number of random bits to generate (8-4096)</td>
+                            </tr>
+                            <tr>
+                                <td><code>mode</code></td>
+                                <td>String</td>
+                                <td>"simulator"</td>
+                                <td>Generation mode: "simulator" only</td>
+                            </tr>
+                            <tr>
+                                <td><code>extractor</code></td>
+                                <td>String</td>
+                                <td>"von_neumann"</td>
+                                <td>Extractor method: "von_neumann" or "hash"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h6>Example Request:</h6>
+                    <pre class="bg-light p-3 rounded text-dark">curl "http://localhost:5173/api/generate?bits=512&mode=simulator&extractor=hash"</pre>
+                    
+                    <h6>Response Format:</h6>
+                    <pre class="bg-light p-3 rounded text-dark">{
+  "bits": "10110101...",
+  "hex": "b56a...",
+  "entropy_estimate": 512.0,
+  "length": 512,
+  "statistics": {
+    "zeros": 256,
+    "ones": 256,
+    "bias": 0.0,
+    "entropy_per_bit": 1.0
+  }
+}</pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // DOM Elements
+        const form = document.getElementById('config-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const healthStatusText = document.getElementById('health-status-text');
+        const footerHealth = document.getElementById('footer-health');
+        const lastUpdated = document.getElementById('lastUpdated');
+        const toastEl = document.getElementById('toast');
+        const toast = new bootstrap.Toast(toastEl);
+        const toastTitle = document.getElementById('toastTitle');
+        const toastBody = document.getElementById('toastBody');
+        const quickGenerateBtn = document.getElementById('quickGenerateBtn');
+        const copyBinaryBtn = document.getElementById('copyBinaryBtn');
+        const copyHexBtn = document.getElementById('copyHexBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // Theme switch
+        const checkbox = document.getElementById('checkbox');
+        const htmlElement = document.documentElement;
+        
+        // Chart instances
+        let distributionChart = null;
+        let metricsChart = null;
+        
+        // Current data
+        let currentData = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial bit value display
+            document.getElementById('bitsValue').textContent = document.getElementById('bits').value;
+            
+            // Set up event listeners
+            document.getElementById('bits').addEventListener('input', function() {
+                document.getElementById('bitsValue').textContent = this.value;
+            });
+            
+            // Theme switch
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+                // Update navbar theme
+                updateNavbarTheme();
+            });
+            
+            // Restore theme preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                checkbox.checked = true;
+            }
+            
+            // Update navbar theme initially
+            updateNavbarTheme();
+            
+            // Form submission handler
+            form.addEventListener('submit', handleFormSubmit);
+            
+            // Quick generate button
+            quickGenerateBtn.addEventListener('click', function() {
+                document.getElementById('bits').value = 256;
+                document.getElementById('bitsValue').textContent = 256;
+                document.getElementById('mode').value = 'simulator';
+                document.getElementById('extractor').value = 'von_neumann';
+                form.dispatchEvent(new Event('submit'));
+            });
+            
+            // Copy buttons
+            copyBinaryBtn.addEventListener('click', function() {
+                if (currentData && currentData.bits) {
+                    copyToClipboard(currentData.bits);
+                    showToast('Copied!', 'Binary output copied to clipboard', 'success');
+                }
+            });
+            
+            copyHexBtn.addEventListener('click', function() {
+                if (currentData && currentData.hex) {
+                    copyToClipboard(currentData.hex);
+                    showToast('Copied!', 'HEX output copied to clipboard', 'success');
+                }
+            });
+            
+            // Download button
+            downloadBtn.addEventListener('click', function() {
+                if (currentData) {
+                    downloadData();
+                }
+            });
+            
+            // Check backend health
+            checkHealth();
+            
+            // Initialize charts
+            initCharts();
+        });
+        
+        // Form submission handler
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const bits = document.getElementById('bits').value;
+            const mode = document.getElementById('mode').value;
+            const extractor = document.getElementById('extractor').value;
+            
+            // Show loading
+            loadingOverlay.classList.remove('d-none');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+            
+            try {
+                // Call our Flask API endpoint
+                const response = await fetch(`/api/generate?bits=${bits}&mode=${mode}&extractor=${extractor}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentData = data;
+                    displayResults(data);
+                    updateLastUpdated();
+                    showToast('Success!', 'Random numbers generated successfully', 'success');
+                } else {
+                    throw new Error(data.error || 'Failed to generate random numbers');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error!', error.message || 'Failed to generate random numbers', 'danger');
+                resultsContainer.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Error</h4>
+                        <p>${error.message || 'An unexpected error occurred while generating random numbers.'}</p>
+                        <hr>
+                        <p class="mb-0">Please check your connection and try again.</p>
+                    </div>
+                `;
+            } finally {
+                // Hide loading
+                loadingOverlay.classList.add('d-none');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="bi bi-shuffle"></i> Generate Random Numbers';
+            }
+        }
+        
+        // Check backend health
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    healthStatusText.textContent = 'Online';
+                    healthStatusText.className = 'text-success';
+                    footerHealth.textContent = 'Online';
+                    footerHealth.className = 'text-success';
+                } else {
+                    healthStatusText.textContent = 'Offline';
+                    healthStatusText.className = 'text-danger';
+                    footerHealth.textContent = 'Offline';
+                    footerHealth.className = 'text-danger';
+                }
+            } catch (error) {
+                healthStatusText.textContent = 'Offline';
+                healthStatusText.className = 'text-danger';
+                footerHealth.textContent = 'Offline';
+                footerHealth.className = 'text-danger';
+            }
+            
+            // Check again in 30 seconds
+            setTimeout(checkHealth, 30000);
+        }
+        
+        // Display results
+        function displayResults(data) {
+            const randomnessScore = Math.max(0, (1 - data.statistics.bias) * 100).toFixed(2);
+            
+            resultsContainer.innerHTML = `
+                <div class="mb-4">
+                    <h6><i class="bi bi-binary"></i> Binary Output</h6>
+                    <div class="result-display bg-light p-3 mb-3 text-dark">
+                        ${data.bits}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6><i class="bi bi-hexagon"></i> HEX Output</h6>
+                    <div class="result-display bg-light p-3 text-dark">
+                        ${data.hex}
+                    </div>
+                </div>
+            `;
+            
+            // Update statistics
+            document.getElementById('randomnessScore').textContent = `${randomnessScore}%`;
+            document.getElementById('entropyEstimate').textContent = data.entropy_estimate.toFixed(4);
+            document.getElementById('biasValue').textContent = data.statistics.bias.toFixed(4);
+            document.getElementById('bitCount').textContent = data.length;
+            
+            // Update charts
+            updateCharts(data);
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+            
+            // Distribution chart (bar chart)
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Zeros', 'Ones'],
+                    datasets: [{
+                        label: 'Bit Count',
+                        data: [0, 0],
+                        backgroundColor: [
+                            'rgba(111, 66, 193, 0.7)',
+                            'rgba(32, 201, 151, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(32, 201, 151, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Metrics chart (radar chart)
+            metricsChart = new Chart(metricsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Randomness', 'Entropy', 'Uniformity', 'Quality'],
+                    datasets: [{
+                        label: 'Metrics',
+                        data: [0, 0, 0, 0],
+                        fill: true,
+                        backgroundColor: 'rgba(111, 66, 193, 0.2)',
+                        borderColor: 'rgb(111, 66, 193)',
+                        pointBackgroundColor: 'rgb(111, 66, 193)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(111, 66, 193)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update charts with new data
+        function updateCharts(data) {
+            if (!distributionChart || !metricsChart) return;
+            
+            const randomnessScore = Math.max(0, (1 - data.statistics.bias) * 100);
+            const entropyScore = Math.min(100, data.entropy_estimate / data.length * 100);
+            const uniformityScore = 100 - (data.statistics.bias * 100);
+            const qualityScore = (randomnessScore + entropyScore + uniformityScore) / 3;
+            
+            // Update distribution chart
+            distributionChart.data.datasets[0].data = [data.statistics.zeros, data.statistics.ones];
+            distributionChart.update();
+            
+            // Update metrics chart
+            metricsChart.data.datasets[0].data = [
+                randomnessScore,
+                entropyScore,
+                uniformityScore,
+                qualityScore
+            ];
+            metricsChart.update();
+        }
+        
+        // Show toast notification
+        function showToast(title, message, type = 'info') {
+            const bgColorClass = {
+                'success': 'bg-success text-white',
+                'danger': 'bg-danger text-white',
+                'warning': 'bg-warning text-dark',
+                'info': 'bg-info text-white'
+            }[type] || 'bg-info text-white';
+            
+            toastTitle.textContent = title;
+            toastBody.textContent = message;
+            toastEl.className = `toast ${bgColorClass}`;
+            
+            toast.show();
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast('Error!', 'Failed to copy to clipboard', 'danger');
+            });
+        }
+        
+        // Download data
+        function downloadData() {
+            if (!currentData) return;
+            
+            const content = `Quantum Random Number Generator Output
+
+Generated: ${new Date().toLocaleString()}
+
+Binary Output:
+${currentData.bits}
+
+HEX Output:
+${currentData.hex}
+
+Statistics:
+- Length: ${currentData.length} bits
+- Zeros: ${currentData.statistics.zeros}
+- Ones: ${currentData.statistics.ones}
+- Bias: ${currentData.statistics.bias.toFixed(6)}
+- Entropy Estimate: ${currentData.entropy_estimate.toFixed(6)}
+- Entropy per Bit: ${currentData.statistics.entropy_per_bit.toFixed(6)}
+
+Randomness Score: ${Math.max(0, (1 - currentData.statistics.bias) * 100).toFixed(2)}%`;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qrng-output-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Downloaded!', 'Data downloaded successfully', 'success');
+        }
+        
+        // Update navbar theme based on current theme
+        function updateNavbarTheme() {
+            const navbar = document.querySelector('nav.navbar');
+            const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            
+            if (isDarkMode) {
+                navbar.classList.remove('bg-body', 'navbar-light');
+                navbar.classList.add('bg-dark', 'navbar-dark');
+            } else {
+                navbar.classList.remove('bg-dark', 'navbar-dark');
+                navbar.classList.add('bg-body', 'navbar-light');
+            }
+        }
+        
+        // Update last updated timestamp
+        function updateLastUpdated() {
+            lastUpdated.textContent = new Date().toLocaleString();
+        }
+    </script>
+</body>
+</html>

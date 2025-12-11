@@ -1,206 +1,230 @@
-# Quantum Random Number Generator (QRNG)
+# 🔮 Quantum Random Number Generator (QRNG)
 
-A full-stack web application that generates truly random numbers using quantum computing principles via Qiskit. Features a Flask frontend with real-time statistics visualization and a Django REST API backend.
+[![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org)
+[![Django](https://img.shields.io/badge/Django-5.0-green.svg)](https://www.djangoproject.com)
+[![Flask](https://img.shields.io/badge/Flask-3.0-black.svg)](https://flask.palletsprojects.com)
+[![Qiskit](https://img.shields.io/badge/Qiskit-Quantum-purple.svg)](https://qiskit.org)
+[![Chart.js](https://img.shields.io/badge/Chart.js-Visualization-red.svg)](https://www.chartjs.org)
 
-## Features
+A powerful full-stack application that generates **true quantum-based random numbers** using Qiskit Hadamard circuits, providing real-time visualizations, entropy extraction, and a modern dual-framework architecture using **Django (Backend)** and **Flask (Frontend)**.
 
-- **Quantum Random Number Generation**: Powered by Qiskit Hadamard circuits
-- **Multiple Extraction Methods**: Von Neumann extractor or SHA-256 hash-based extraction
-- **Real-time Statistics**: Dynamic visualization of bit distribution, entropy, and bias
-- **Auto-refresh**: Optionally generate new random numbers automatically
-- **Backend Health Monitoring**: Real-time status indicator
-- **Modern UI**: Built with Flask and HTML/CSS
+---
 
-## Tech Stack
+## 🚀 Features
 
-- **Backend**: Django 5.0+ with Django REST Framework
-- **Frontend**: Flask with HTML/CSS
-- **Quantum Computing**: Qiskit and Qiskit-Aer
-- **Visualization**: Chart.js
-- **Styling**: Bootstrap 5
+### 🎯 Core Functionality
+- ⚛️ **Quantum Random Number Generation** using Qiskit  
+- 🧮 **Multiple Entropy Extractors** — Von Neumann or SHA-256  
+- 📊 **Real-time Statistics** — Bit distribution, entropy & bias  
+- 🔁 **Auto-refresh Mode** — Continuous random number stream  
+- ❤️ **Backend Health Indicator** — Live connection monitoring  
+- 🖥️ **Modern UI** built with Flask + HTML/CSS  
 
-## Prerequisites
+---
 
-- Python 3.12+ 
-- Node.js 18+ and npm
-- Qiskit dependencies (installed via requirements.txt)
+## 🧩 Tech Stack
 
-## Quick Start
+### 🖥️ Backend
+- **Django 5.0+**  
+- **Django REST Framework**  
+- **Qiskit** for quantum circuit execution  
+- **Gunicorn** for production (Railway deployment)
 
-### Option 1: Using Startup Script (Recommended)
+### 🎨 Frontend
+- **Flask**  
+- **Chart.js**  
+- **Bootstrap 5** for styling  
 
-**Windows (PowerShell):**
-```powershell
-# Start both backend and frontend
+### ⚙️ Other Tools
+- **Python 3.12+**  
+- **Qiskit-Aer** (simulated quantum backend)
+
+---
+
+## 🏗️ Project Structure
+
+```
+QRNG/
+├── backend/               # Django backend
+│   ├── config/            # Settings & config
+│   ├── qrng/              # Core QRNG logic
+│   │   ├── extractor.py   # Entropy extractors
+│   │   ├── qiskit_engine.py # Quantum engine
+│   │   └── views.py       # REST API views
+│   └── manage.py
+├── frontend/              # Flask frontend
+│   ├── templates/         # HTML templates
+│   ├── app.py             # Flask server
+│   └── requirements.txt
+└── start-project.ps1      # Auto-start script (Windows)
+```
+
+---
+
+## ⚙️ Getting Started
+
+### 📋 Prerequisites
+
+- Python 3.12+
+- Node.js 18+
+- Qiskit dependencies
+
+---
+
+
+## 🛠️ Installation & Setup
+
+### ▶️ Option 1: Auto Startup (Recommended)
+
+**Windows PowerShell**
+
+```
 .\start-project.ps1
 ```
 
-### Option 2: Manual Setup
+### ▶️ Option 2: Manual Setup
+- 🖥️ Backend Setup (Django)**
 
-#### Backend Setup
+1. Navigate to backend:
 
-1. Navigate to the backend directory:
-```bash
+```
 cd backend
 ```
 
-2. Install Python dependencies:
-```bash
+2. Install dependencies:
+
+```
 pip install -r requirements.txt
 ```
 
 3. Run migrations:
-```bash
-# From project root with PYTHONPATH set
+
+```
 cd ..
 $env:PYTHONPATH="."
 python backend/manage.py migrate
 ```
 
-4. Start the Django server:
-```bash
-# Windows PowerShell
+4. Start server:
+
+```
 cd backend
 $env:PYTHONPATH=".."
-$env:DEBUG="True"
-python manage.py runserver
-
-# Linux/Mac
-cd backend
-export PYTHONPATH=..
-export DEBUG=True
 python manage.py runserver
 ```
 
-Backend will run on `http://localhost:8000`
+➤ Backend runs on http://localhost:8000
 
-#### Frontend Setup
+### 🌐 Frontend Setup (Flask)
 
-1. Navigate to the frontend directory:
-```bash
+1. Navigate to frontend:
+
+```
 cd frontend
 ```
 
-2. Install Python dependencies:
-```bash
+2. Install dependencies:
+
+```
 pip install -r requirements.txt
 ```
 
-3. Start the Flask server:
-```bash
-# Windows PowerShell
-cd frontend
-$env:BACKEND_URL="http://localhost:8000"
-python app.py
+3. Start frontend:
 
-# Linux/Mac
-cd frontend
-export BACKEND_URL=http://localhost:8000
+```
 python app.py
 ```
 
-Frontend will run on `http://localhost:5173`
+➤ Frontend runs on http://localhost:5173
 
-## API Endpoints
+---
 
-- `GET /health/` - Health check endpoint
-- `GET /api/random/` - Generate random bits
-  - Query parameters:
-    - `bits` (default: 256) - Number of bits to generate (1-4096)
-    - `mode` (default: simulator) - `simulator` or `ibmq`
-    - `extractor` (default: von_neumann) - `von_neumann` or `hash`
 
-Example:
+## 🔌 API Endpoints
+
+###📥 Random Number Generation
+
 ```
 GET /api/random/?bits=512&mode=simulator&extractor=hash
 ```
 
-## Environment Variables
+**Endpoints**
 
-### Backend
+- ```GET /health/``` — Health status
+- ```GET /api/random/``` — Generate quantum random bits
+  - ```bits``` → Default: 256
+  - ```mode``` → simulator / ibmq
+  - ```extractor``` → von_neumann / hash
 
-Create a `.env` file in the `backend` directory (or use `env.example` as a template):
+---
 
-```env
-DJANGO_SECRET_KEY=your-secret-key-here
+
+## 🔧 Environment Variables
+
+### 🔹 Backend ```.env```
+
+```
+DJANGO_SECRET_KEY=your-secret-key
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:5173
-API_THROTTLE_ANON=30/min
-API_THROTTLE_USER=120/min
-API_THROTTLE_QRNG=60/min
-IBMQ_TOKEN=  # Optional: For IBM Quantum hardware
+IBMQ_TOKEN=
 IBMQ_BACKEND=ibmq_qasm_simulator
 ```
 
-### Frontend
+### 🔹 Frontend
 
-For production deployments, set the BACKEND_URL environment variable:
-```env
+```
 BACKEND_URL=http://your-backend-url:8000
 ```
 
-## Project Structure
 
-```
-QNRG/
-├── backend/              # Django backend
-│   ├── config/          # Django settings
-│   ├── qrng/            # QRNG app
-│   │   ├── extractor.py # Entropy extractors
-│   │   ├── qiskit_engine.py # Quantum engine
-│   │   └── views.py     # API views
-│   └── manage.py
-├── frontend/            # Flask frontend
-│   ├── templates/       # HTML templates
-│   ├── app.py           # Flask application
-│   └── requirements.txt # Frontend dependencies
-└── start-project.ps1    # Windows startup script
-```
+## 🚀 Deployment (Railway.app)
 
-## Railway.app Deployment
+- Django served using Gunicorn
+- Flask served as a standalone app
+- Fully configured using railway.yml
 
-The application is configured for deployment on Railway.app:
+**Steps:**
 
-1. Backend served by Gunicorn + Django
-2. Frontend served as a Flask application
-3. `railway.yml` defines both services and their configurations
+1. Push to GitHub
+2. Connect Railway
+3. Railway auto-detects config
+4. Deploy both frontend & backend
+5. Set environment variables
 
-To deploy to Railway:
-1. Push your code to a GitHub repository
-2. Connect Railway to your repository
-3. Railway will automatically detect the `railway.yml` configuration
-4. Deploy both services
-5. Set the `DJANGO_SECRET_KEY` environment variable in the Railway dashboard for the backend service
+---
 
-## Development Features
 
-- **Dynamic Auto-refresh**: Enable auto-refresh with customizable interval
-- **Health Monitoring**: Real-time backend connection status
-- **Error Handling**: Comprehensive error messages and timeout handling
-- **Copy & Download**: Export random data as text files
-- **Responsive Design**: Works on desktop and mobile devices
+## 💡 Development Features
 
-## Troubleshooting
+- ⏱ Auto-refresh interval
+- 🧪 Error & timeout handling
+- 📁 Export random bits as text files
+- 📱 Responsive mobile-friendly UI
+- 🧭 Real-time QRNG system health
 
-1. **Backend connection issues**: 
-   - Ensure backend is running on port 8000
-   - Check CORS settings in `backend/config/settings.py`
-   - Verify `DEBUG=True` is set
+---
 
-2. **Module not found errors**:
-   - Set `PYTHONPATH=.` before running Django commands
-   - Ensure all dependencies are installed
+## 🛠 Troubleshooting
 
-3. **Frontend connection issues**:
-   - Check `frontend/app.py` BACKEND_URL configuration
-   - Verify backend is accessible at the configured URL
+###❗ Backend Issues
 
-4. **Virtual environment conflicts**:
-   - If you encounter import errors, temporarily rename the `.venv` directory
-   - The project can run using the system Python environment
-   - This is a known issue with the project's virtual environment setup
+- Check port ```8000```
+- Validate CORS in Django settings
 
-## License
+### ❗ Frontend Issues
 
-This project is open source and available for educational and research purposes.
+- ```BACKEND_URL``` mismatch
+- Missing Python packages
+
+### ❗ Virtual Environment Problems
+
+- Rename ```.venv``` temporarily
+- Use system Python environment
+
+---
+
+📜 License
+
+This project is open-source and intended for research & educational use.

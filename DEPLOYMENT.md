@@ -96,6 +96,22 @@ PORT=10000
    - Check build logs in Railway dashboard
    - Ensure all environment variables are set
    - Verify requirements.txt files are up to date
+   - Try specifying Python version 3.11 in runtime.txt
+
+4. **Railpack build errors**:
+   - Railway uses Railpack to build Python applications
+   - If you encounter "Error creating build plan with Railpack":
+     - Ensure you have a `runtime.txt` file specifying Python version (e.g., `python-3.11`)
+     - Check that all dependencies in `requirements.txt` are compatible with Python 3.11
+     - Some packages like qiskit may have specific build requirements
+     - Consider using Docker-based deployment if Railpack continues to fail
+
+5. **Qiskit dependency issues**:
+   - Qiskit is a complex package with native dependencies
+   - If build fails due to qiskit, try:
+     - Using Python 3.11 (more compatible)
+     - Checking Railway build logs for specific error messages
+     - Considering a Docker deployment approach
 
 ## Scaling Considerations
 

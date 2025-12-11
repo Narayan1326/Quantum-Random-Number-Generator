@@ -2,7 +2,7 @@ services:
   - name: qrng-backend
     type: python
     buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "cd backend && python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_SECRET_KEY
         sync: false
@@ -22,3 +22,7 @@ services:
     envVars:
       - key: PORT
         value: 10000
+
+# Specify build configuration
+build:
+  builder: railpack

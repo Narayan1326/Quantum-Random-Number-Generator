@@ -1,9 +1,9 @@
 #!/bin/bash
-# Bash script to start the servers for Render deployment
+# Bash script to start the development servers
 # Backend: Django/Gunicorn on port 8000
 # Frontend: Flask on port 5173
 
-echo "Starting QNRG Servers for Render Deployment..."
+echo "Starting QNRG Development Servers..."
 echo ""
 
 # Start backend with Gunicorn

@@ -1,16 +1,18 @@
 # Deployment Guide
 
-This document explains how to deploy the Quantum Random Number Generator (QRNG) application to Render.
+This document explains how to deploy the Quantum Random Number Generator (QRNG) application to Railway.
 
 ## Prerequisites
 
 1. A GitHub account
-2. A Render account (free tier available at render.com)
+2. A Railway account (railway.app)
 3. Git installed on your local machine
 
 ## Deployment Steps
 
-### 1. Push to GitHub
+### Deploy to Railway.app
+
+#### 1. Push to GitHub
 
 First, make sure your project is pushed to a GitHub repository:
 
@@ -23,43 +25,27 @@ git remote add origin https://github.com/yourusername/qrng.git
 git push -u origin main
 ```
 
-### 2. Deploy to Render
+#### 2. Deploy to Railway
 
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click "New+" and select "Web Service"
+1. Go to [Railway Dashboard](https://railway.app/)
+2. Create a new project
 3. Connect your GitHub repository
-4. Configure the service:
-   - Name: `qrng-backend`
-   - Environment: `Python 3`
-   - Build command: `cd backend && pip install -r requirements.txt`
-   - Start command: `cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
-   - Plan type: Free
+4. Railway will automatically detect the `railway.yml` configuration file
+5. Deploy both services (backend and frontend)
+6. Add environment variables in the Railway dashboard:
+   - For backend:
+     - `DJANGO_SECRET_KEY`: Your secret key (keep this secure)
+   - For frontend:
+     - No additional variables needed (BACKEND_URL is automatically configured)
 
-5. Add environment variables:
-   - `DJANGO_SECRET_KEY`: Your secret key (keep this secure)
-   - `DEBUG`: `False`
-   - `ALLOWED_HOSTS`: Your Render URL (e.g., `qrng-backend.onrender.com`)
-   - `PYTHONPATH`: `..`
+Alternatively, you can use the Railway CLI:
 
-6. Click "Create Web Service"
+1. Install the Railway CLI: `npm install -g @railway/cli`
+2. Login: `railway login`
+3. Initialize: `railway init`
+4. Deploy: `railway up`
 
-7. Deploy the frontend:
-   - Click "New+" and select "Web Service" again
-   - Name: `qrng-frontend`
-   - Environment: `Python 3`
-   - Build command: `cd frontend && pip install -r requirements.txt`
-   - Start command: `cd frontend && export BACKEND_URL=https://YOUR_BACKEND_URL && python run.py`
-   - Plan type: Free
-
-8. Add environment variables for frontend:
-   - `PORT`: `10000` (or any port you prefer)
-   - `BACKEND_URL`: The URL of your deployed backend service
-
-### 3. Alternative: Using render.yaml
-
-If you have the `render.yaml` file in your repository, Render will automatically detect and configure both services.
-
-### 4. Manual Deployment Scripts
+### Manual Deployment Scripts
 
 You can also use the provided deployment scripts:
 
@@ -107,7 +93,7 @@ PORT=10000
    - Check that all dependencies are installed
 
 3. **Deployment fails**:
-   - Check build logs in Render dashboard
+   - Check build logs in Railway dashboard
    - Ensure all environment variables are set
    - Verify requirements.txt files are up to date
 

@@ -1,7 +1,6 @@
 services:
-  - type: web
-    name: qrng-backend
-    env: python
+  - name: qrng-backend
+    type: python
     buildCommand: "cd backend && pip install -r requirements.txt"
     startCommand: "cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
@@ -13,12 +12,13 @@ services:
         value: "*"
       - key: PYTHONPATH
         value: ..
+      - key: CORS_ALLOW_ALL
+        value: true
 
-  - type: web
-    name: qrng-frontend
-    env: python
+  - name: qrng-frontend
+    type: python
     buildCommand: "cd frontend && pip install -r requirements.txt"
-    startCommand: "cd frontend && export BACKEND_URL=https://$RENDER_SERVICE_NAME-qrng-backend.onrender.com && python run.py"
+    startCommand: "cd frontend && export BACKEND_URL=https://$RAILWAY_SERVICE_NAME-qrng-backend.up.railway.app && python run.py"
     envVars:
       - key: PORT
         value: 10000

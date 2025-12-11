@@ -15,10 +15,10 @@ This document captures the high-level architecture for the Quantum Random Number
    - Visualizes bit distribution with HTML/CSS.  
    - Simple and lightweight interface.
 
-3. **Render Deployment**  
+3. **Railway Deployment**  
    - Backend served by Gunicorn + Django.  
    - Frontend served as a Flask application.  
-   - `render-build.sh` ensures migrations run during deploys.
+   - `railway.yml` defines both services and their configurations.
 
 ## Data Flow
 
@@ -33,4 +33,3 @@ This document captures the high-level architecture for the Quantum Random Number
 - Secrets stored as environment variables.  
 - Rate limiting via DRF throttles.  
 - Optional IBMQ hardware gated by token presence.
-

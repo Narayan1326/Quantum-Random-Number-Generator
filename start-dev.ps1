@@ -1,8 +1,8 @@
-# PowerShell script to start the development servers for Render deployment
+# PowerShell script to start the development servers
 # Backend: Django/Gunicorn on port 8000
 # Frontend: Flask on port 5173
 
-Write-Host "Starting QNRG Servers for Render Deployment..." -ForegroundColor Cyan
+Write-Host "Starting QNRG Development Servers..." -ForegroundColor Cyan
 Write-Host ""
 
 # Start backend with Gunicorn

@@ -27,26 +27,12 @@ A full-stack web application that generates truly random numbers using quantum c
 
 ## Quick Start
 
-### Option 1: Using Startup Scripts (Recommended)
+### Option 1: Using Startup Script (Recommended)
 
 **Windows (PowerShell):**
 ```powershell
-# Start backend
-.\start-dev-local.ps1
-
-# In a new terminal, start frontend
-.\start-frontend.ps1
-```
-
-**Linux/Mac:**
-```bash
-# Start backend
-chmod +x start-dev-local.sh
-./start-dev-local.sh
-
-# In a new terminal, start frontend
-chmod +x start-frontend.sh
-./start-frontend.sh
+# Start both backend and frontend
+.\start-project.ps1
 ```
 
 ### Option 2: Manual Setup
@@ -67,21 +53,23 @@ pip install -r requirements.txt
 ```bash
 # From project root with PYTHONPATH set
 cd ..
-set PYTHONPATH=.
+$env:PYTHONPATH="."
 python backend/manage.py migrate
 ```
 
 4. Start the Django server:
 ```bash
 # Windows PowerShell
-$env:PYTHONPATH="."
+cd backend
+$env:PYTHONPATH=".."
 $env:DEBUG="True"
-python backend/manage.py runserver
+python manage.py runserver
 
 # Linux/Mac
-export PYTHONPATH=.
+cd backend
+export PYTHONPATH=..
 export DEBUG=True
-python backend/manage.py runserver
+python manage.py runserver
 ```
 
 Backend will run on `http://localhost:8000`
@@ -100,6 +88,14 @@ pip install -r requirements.txt
 
 3. Start the Flask server:
 ```bash
+# Windows PowerShell
+cd frontend
+$env:BACKEND_URL="http://localhost:8000"
+python app.py
+
+# Linux/Mac
+cd frontend
+export BACKEND_URL=http://localhost:8000
 python app.py
 ```
 
@@ -159,22 +155,23 @@ QNRG/
 │   ├── templates/       # HTML templates
 │   ├── app.py           # Flask application
 │   └── requirements.txt # Frontend dependencies
-└── start-dev-local.ps1        # Windows startup script
+└── start-project.ps1    # Windows startup script
 ```
 
-## Render Deployment
+## Railway.app Deployment
 
-The application is configured for deployment on Render:
+The application is configured for deployment on Railway.app:
 
 1. Backend served by Gunicorn + Django
 2. Frontend served as a Flask application
-3. `render-build.sh` ensures migrations run during deploys
+3. `railway.yml` defines both services and their configurations
 
-To deploy locally for testing Render setup:
-```bash
-./start-dev.sh  # Linux/Mac
-./start-dev.ps1 # Windows
-```
+To deploy to Railway:
+1. Push your code to a GitHub repository
+2. Connect Railway to your repository
+3. Railway will automatically detect the `railway.yml` configuration
+4. Deploy both services
+5. Set the `DJANGO_SECRET_KEY` environment variable in the Railway dashboard for the backend service
 
 ## Development Features
 
@@ -198,6 +195,11 @@ To deploy locally for testing Render setup:
 3. **Frontend connection issues**:
    - Check `frontend/app.py` BACKEND_URL configuration
    - Verify backend is accessible at the configured URL
+
+4. **Virtual environment conflicts**:
+   - If you encounter import errors, temporarily rename the `.venv` directory
+   - The project can run using the system Python environment
+   - This is a known issue with the project's virtual environment setup
 
 ## License
 
